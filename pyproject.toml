@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "openai-tools"
+version = "0.1.0"
+description = ""
+authors = ["AlphaLoris <123699939+AlphaLoris@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "openai_tools"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+openai = "^0.27.7"
+requests = "^2.31.0"
+tqdm = "^4.65.0"
+flake8 = "^6.0.0"
+pyinstaller = "^5.11.0"
+tiktoken = "^0.4.0"
+keyring = "^23.13.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
