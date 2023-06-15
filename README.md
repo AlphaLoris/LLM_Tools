@@ -1,5 +1,7 @@
 # OpenAITools
 
+openai_chat_gui
+
 This application provides a graphical user interface for the OpenAI chat completion API.  It allows you to choose one of their Large Language Models to interact with, provide values for all of the parameters that control the behavior of the LLM, build a prompt for the LLM, submit it, and then review the LLM's response. Here is a brief description of its features/behavior:
 
 - Prompt tab - The tab where you can provide your API key, choose the model you want to submit your prompt to, set the behavioral parameters for the model, and define your prompt.
@@ -27,4 +29,14 @@ This application provides a graphical user interface for the OpenAI chat complet
 
 API Key
 
-In order to use this application, you will need an OpenAI API key. You can get one by creating an account at OpenAI.com and associating a credit card with your account.  Each API call cost a few cents at most. After 6 months of occasional use of the API, I have maybe spent $5.00.  My usage so far this month (6/12/2023) is $1.22. 
+In order to use this application, you will need an OpenAI API key. You can get one by creating an account at OpenAI.com and associating a credit card with your account.  Each API call cost a few cents at most. After 6 months of occasional use of the API, I have maybe spent $5.00.  My usage so far this month (6/12/2023) is $1.22.
+
+
+token_counter
+
+This tool provides a gui for ticktoken that allows the user to paste a block of text into the text window, and then use the controls to count the tokens in the text.
+
+
+text_splitter
+
+This tool allows the user to browse to a directory containing a .txt file, and select the file. Text_splitter will then split the text file into chunks with the maximum size in tokens specified by the max_tokens value in the code. The max_token value is currently set to 4000 tokens.
