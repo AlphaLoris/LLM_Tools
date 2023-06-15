@@ -26,6 +26,7 @@ This application provides a graphical user interface for the OpenAI chat complet
 - Finish Reasons - The reason the model stopped generating the response. Unless you specified a stop text string in the parameters, the Finish Reason will generally be "Stop" which I understand to mean that the model decided it had reached the end of the response. If the API call fails, you will see a description of that here.
 - Response tab - The tab where the text of the model's response to your prompt will be displayed.
 - Guide to Prompt Structure tab - this tab provides some brief guidance to prompting, and links to some other prompting resources.
+
 API Key - In order to use this application, you will need an OpenAI API key. You can get one by creating an account at OpenAI.com and associating a credit card with your account.  Each API call cost a few cents at most. After 6 months of occasional use of the API, I have maybe spent $5.00.  My usage so far this month (6/12/2023) is $1.22.
 
 
