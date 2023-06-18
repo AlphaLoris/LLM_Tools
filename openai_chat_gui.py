@@ -92,7 +92,7 @@ def is_valid_api_key_model(api_key, test_model):
     return error_messages
 
 
-# TODO: Add a way to change the API Key
+# TODO: This function displays an error message that seems to be irrelevant to this application. Need to fix it.
 def notify_invalid_key(errors, api_key):
     print("OpenAI API call failed. Notifying user that API Key is invalid")
     error_message = "\n".join(errors)
@@ -247,6 +247,7 @@ class PromptUI:
         self.model_list = model_list
         self.api_key = api_key
         self.context_windows = context_windows
+        self.context_length = tk.IntVar()
         self.root.title("OpenAI Chat Completion API UI")
         self.root.geometry("700x800")
 
@@ -262,12 +263,16 @@ class PromptUI:
 
         prompt_structure_text = textwrap.dedent("""Context Window Size (in tokens):
         
-gpt-4: 8,192
-gpt-4-0314: 8,192
-gpt-4-32k: 32,768
-gpt-4-32k-0314: 32,768
-gpt-3.5-turbo": 4,096
-gpt-3.5-turbo-0301: 4,096
+gpt-4: 8192
+gpt-4-0613: 8192
+gpt-4-0314: 8192
+gpt-4-32k: 32768
+gpt-4-32k-0613: 32768
+gpt-4-32k-0314: 32768
+gpt-3.5-turbo: 4096
+gpt-3.5-turbo-16k: 16384
+gpt-3.5-turbo-0613: 4096
+gpt-3.5-turbo-0301: 4096
         
 Guide to Structuring a Chat Completion prompt for OpenAI LLMs
 
@@ -331,15 +336,6 @@ https://www.promptingguide.ai/
         self.parameters_frame.columnconfigure(5, weight=1)
 
         # Model
-        """
-        Currently available models that support chat completion:
-        gpt-4
-        gpt-4-0314
-        gpt-4-32k
-        gpt-4-32k-0314
-        gpt-3.5-turbo
-        gpt-3.5-turbo-0301
-        """
         self.model_var = tk.StringVar(self.parameters_frame)
         self.model_var.trace_add('write', self.update_context_length)
         self.refresh_button = tk.Button(self.parameters_frame, text="Refresh Models",
@@ -558,6 +554,7 @@ https://www.promptingguide.ai/
 
     def update_context_length(self, *args):
         selected_model = self.model_var.get()
+        print("Updating context window value for selected model: " + selected_model)
         if selected_model in self.context_windows:
             context_length = self.context_windows[selected_model]
         else:
@@ -838,7 +835,6 @@ https://www.promptingguide.ai/
             else:
                 return
 
-# TODO: Make the max token limit dynamic based on the model's context length
         # Validate max_tokens based on the number of tokens in the prompt
         """
         Optional. Max_tokens is an integer that defaults to infinite. It indicates the maximum number of tokens the
@@ -1067,6 +1063,7 @@ def populate_model_list(context_window, api_key):
 
     model_list = []
     for model_name, context_window in context_window.items():
+        print(f"Testing {model_name}...")
         if not is_valid_api_key_model(api_key, model_name):
             model_list.append(model_name)
 
@@ -1076,10 +1073,14 @@ def populate_model_list(context_window, api_key):
 if __name__ == "__main__":
     context_windows = {
         "gpt-4": 8192,
+        "gpt-4-0613": 8192,
         "gpt-4-0314": 8192,
         "gpt-4-32k": 32768,
+        "gpt-4-32k-0613": 32768,
         "gpt-4-32k-0314": 32768,
         "gpt-3.5-turbo": 4096,
+        "gpt-3.5-turbo-16k": 16384,
+        "gpt-3.5-turbo-0613": 4096,
         "gpt-3.5-turbo-0301": 4096
     }
     app_root = tk.Tk()

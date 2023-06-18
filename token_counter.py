@@ -9,11 +9,9 @@ def num_tokens_from_string(string: str, encoding_name: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
-# num_tokens_from_string("tiktoken is great!", "cl100k_base")
-
 
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
-    """Returns the number of tokens used by a list of messages."""
+    # Returns the number of tokens used by a list of messages.
     try:
         encoding = tiktoken.encoding_for_model(model)
     except KeyError:
@@ -27,8 +25,23 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
         print("num_tokens calculated:", num_tokens)
         return num_tokens
     else:
-        raise NotImplementedError(f"""num_tokens_from_messages() is not presently implemented for model {model}.""")
+        raise NotImplementedError(f"num_tokens_from_messages() is not presently implemented for model {model}.")
 
+
+# Function to count the tokens
+def count_tokens():
+    # Get the user input from the text box
+    user_input = text_box.get("1.0", tk.END)
+
+    # Check if the user input is empty
+    if user_input.strip() == "":
+        messagebox.showwarning("Warning", "Please enter some text.")
+    else:
+        # Call the existing function to count the tokens
+        num_tokens = num_tokens_from_messages([user_input])
+
+        # Display the number of tokens in the result area
+        result_area.configure(text=f"Number of tokens: {num_tokens}")
 
 # Create the main window
 window = tk.Tk()
@@ -47,23 +60,6 @@ text_box = scrolledtext.ScrolledText(window, width=70, height=30, padx=10, pady=
 
 # Set the text box properties
 text_box.pack()
-
-
-# Function to count the tokens
-def count_tokens():
-    # Get the user input from the text box
-    user_input = text_box.get("1.0", tk.END)
-
-    # Check if the user input is empty
-    if user_input.strip() == "":
-        messagebox.showwarning("Warning", "Please enter some text.")
-    else:
-        # Call the existing function to count the tokens
-        num_tokens = num_tokens_from_messages([user_input])
-
-        # Display the number of tokens in the result area
-        result_area.configure(text=f"Number of tokens: {num_tokens}")
-
 
 # Create the button frame
 button_frame = tk.Frame(window)
