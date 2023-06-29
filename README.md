@@ -41,6 +41,8 @@ token_counter
 
 This tool provides a gui for ticktoken that allows the user to paste a block of text into the text window, and then use the controls to count the tokens in the text.
 
+<img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" width="700"/>
+
 
 text_splitter
 
