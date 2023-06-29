@@ -179,6 +179,17 @@ def send_request(model: object, prompt: object, temperature: object, top_p: obje
                  stop: object, max_tokens: object, presence_penalty: object, frequency_penalty: object,
                  logit_bias: object, user: object) -> object:
     """
+    :param user:
+    :param frequency_penalty:
+    :param presence_penalty:
+    :param max_tokens:
+    :param stop:
+    :param stream:
+    :param n:
+    :param top_p:
+    :param temperature:
+    :param prompt:
+    :param model:
     :type logit_bias: object
     """
     print("Sending request to OpenAI API...", "model = ", model, "\ntemperature = ", temperature, "\ntop_p = ", top_p,
@@ -276,7 +287,7 @@ gpt-3.5-turbo-0301: 4096
         
 Guide to Structuring a Chat Completion prompt for OpenAI LLMs
 
-Note: the maximum length of a prompt is 4097 tokens. This is the sum of all of the tokens in the message components, plus the tokens in the and tokens that OpenAI adds to the prompt.
+Note: the maximum length of a prompt is limited by the context window size. This is the sum of all of the tokens in the message components, plus the tokens that OpenAI adds to the prompt, and the tokens in the response.
 
 Chat completion prompts are composed of as many as three types of messages: "System" messages, "Assistant" messages, and "User" messages. These elements serve the following purposes:
 
@@ -622,6 +633,7 @@ https://www.promptingguide.ai/
         window.destroy()
 
     # Method to add message component to the list and update the token count
+    # TODO: Update this so that it counts the tokens for all of the message components.
     def add_message_component(self, content):
         print("Adding message component")
         self.message_components.append({'role': tk.StringVar(), 'content': content})
@@ -841,13 +853,14 @@ https://www.promptingguide.ai/
         model is to generate in the chat completion. The total length of input tokens and generated tokens is limited
         by the model's context length. For GPT-4, the context length is 4096 tokens.
         """
+        # TODO: Validate max_tokens based on the number of tokens in the context window for the selected model
         try:
             max_tokens_str = self.max_tokens_entry.get()
             if not max_tokens_str:
                 max_tokens = None
             else:
                 max_tokens = int(max_tokens_str)
-                if max_tokens < 1 or max_tokens > 4096:
+                if max_tokens < 1 or max_tokens > self.context_windows:
                     raise ValueError("Invalid max_tokens value")
         except ValueError:
             message_box = CustomMessageBox(
