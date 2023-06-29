@@ -2,7 +2,7 @@
 
 openai_chat_gui
 
-<img src="OpenAITools/resources/OpenAI_Chat_Completion_AI_UI.jpg" alt="Prompt Tab" width="400"/>
+<img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI.jpg" alt="Prompt Tab" width="400"/>
 
 This application provides a graphical user interface for the OpenAI chat completion API.  It allows you to choose one of their Large Language Models to interact with, provide values for all of the parameters that control the behavior of the LLM, build a prompt for the LLM, submit it, and then review the LLM's response. Here is a brief description of its features/behavior:
 
