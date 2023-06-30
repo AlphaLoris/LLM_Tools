@@ -136,33 +136,35 @@ class CustomMessageBox(simpledialog.Dialog):
 
 # Function to determine the number of tokens in a message
 def num_tokens_from_messages(messages, model):
-    """Returns the number of tokens used by a list of messages."""
-    print("Counting tokens: num_tokens_from_messages() called")
-    print("messages:", messages)
-    print("model:", model)
+    """Return the number of tokens used by a list of messages."""
     try:
         encoding = tiktoken.encoding_for_model(model)
-        print("encoding:", encoding)
-        print("counting tokens for model", model)
     except KeyError:
         print("Warning: model not found. Using cl100k_base encoding.")
         encoding = tiktoken.get_encoding("cl100k_base")
-    if model == "gpt-3.5-turbo":
-        print("Warning: gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
-        return num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301")
-    elif model == "gpt-4":
-        print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4.")
-        return num_tokens_from_messages(messages, model="gpt-4-0314")
+    if model in {
+        "gpt-3.5-turbo-0613",
+        "gpt-3.5-turbo-16k-0613",
+        "gpt-4-0314",
+        "gpt-4-32k-0314",
+        "gpt-4-0613",
+        "gpt-4-32k-0613",
+        }:
+        tokens_per_message = 3
+        tokens_per_name = 1
     elif model == "gpt-3.5-turbo-0301":
         tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
         tokens_per_name = -1  # if there's a name, the role is omitted
-    elif model == "gpt-4-0314":
-        tokens_per_message = 3
-        tokens_per_name = 1
+    elif "gpt-3.5-turbo" in model:
+        print("Warning: gpt-3.5-turbo may update over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
+        return num_tokens_from_messages(messages, model="gpt-3.5-turbo-0613")
+    elif "gpt-4" in model:
+        print("Warning: gpt-4 may update over time. Returning num tokens assuming gpt-4-0613.")
+        return num_tokens_from_messages(messages, model="gpt-4-0613")
     else:
-        raise NotImplementedError(f"""num_tokens_from_messages() is not implemented for model {model}. See
-         https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to
-          tokens.""")
+        raise NotImplementedError(
+            f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
+        )
     num_tokens = 0
     for message in messages:
         num_tokens += tokens_per_message
@@ -351,6 +353,7 @@ https://www.promptingguide.ai/
         self.model_var.trace_add('write', self.update_context_length)
         self.refresh_button = tk.Button(self.parameters_frame, text="Refresh Models",
                                         command=self.refresh_model_list)
+        print("Model_list: ", model_list)
         self.refresh_button.grid(row=0, column=0, padx=10, pady=5, sticky="w")
         self.model_var.set("Select Model")
         self.model_menu = ttk.Combobox(self.parameters_frame, textvariable=self.model_var)
@@ -573,9 +576,10 @@ https://www.promptingguide.ai/
         self.context_length.set(context_length)
 
     def refresh_model_list(self):
-        model_list = populate_model_list(self.context_windows, self.api_key)
-        print("Updating model list: " + str(model_list))
-        self.model_menu['values'] = ["Select Model"] + model_list
+        new_model_list = populate_model_list(self.context_windows, self.api_key)
+        print("Updating model list: " + str(new_model_list))
+        self.model_menu['values'] = ["Select Model"] + new_model_list
+        self.model_list = new_model_list
 
     def edit_api_key(self):
         # Here is where you'd put the logic to edit the API Key
@@ -596,7 +600,7 @@ https://www.promptingguide.ai/
         if model == "Refresh Model List":
             populate_model_list(self.context_windows, self.model_list)
             return False
-        if model not in ["gpt-4", "gpt-3.5-turbo", "gpt-3.5-turbo-0301", "gpt-4-0314", "gpt-4-32k"]:
+        if model not in self.model_list:
             messagebox.showerror("Error", "Invalid model. Please select a valid model.")
             print(f"Model is invalid", {model})
             return False
@@ -622,7 +626,7 @@ https://www.promptingguide.ai/
             text_box.insert("1.0", content)
 
         save_button = tk.Button(message_component_window, text="Save", command=lambda:
-        self.save_message_component(text_box.get("1.0", "end-1c"), message_component_window))
+                                self.save_message_component(text_box.get("1.0", "end-1c"), message_component_window))
         save_button.pack(pady=10)
 
     # Method to save the message component and close the message component window
