@@ -37,13 +37,13 @@ This application provides a graphical user interface for the OpenAI chat complet
 API Key - In order to use this application, you will need an OpenAI API key. You can get one by creating an account at OpenAI.com and associating a credit card with your account.  Each API call cost a few cents at most. After 6 months of occasional use of the API, I have maybe spent $5.00.  My usage so far this month (6/12/2023) is $1.22.
 
 
-token_counter
+<strong>token_counter<strong/>
 
 This tool provides a gui for ticktoken that allows the user to paste a block of text into the text window, and then use the controls to count the tokens in the text.
 
 <img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" width="700"/>
 
 
-text_splitter
+<strong>text_splitter<strong/>
 
 This tool allows the user to browse to a directory containing a .txt file, and select the file. Text_splitter will then split the text file into chunks with the maximum size in tokens specified by the max_tokens value in the code. The max_token value is currently set to 4000 tokens.
