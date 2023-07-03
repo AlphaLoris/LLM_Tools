@@ -1,6 +1,6 @@
 # OpenAITools
 
-<b>openai_chat_gui<b/>
+<b>openai_chat_gui</b>
 
 <img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI.jpg" alt="Prompt Tab" width="700"/>
 
