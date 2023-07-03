@@ -3,7 +3,7 @@
 <strong>openai_chat_gui</strong>
 
 
-<img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI.jpg" alt="Prompt Tab" width="700"/>
+    <img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI.jpg" alt="Prompt Tab" width="700"/>
 
 This application provides a graphical user interface for the OpenAI chat completion API.  It allows you to choose one of their Large Language Models to interact with, provide values for all of the parameters that control the behavior of the LLM, build a prompt for the LLM, submit it, and then review the LLM's response. Here is a brief description of its features/behavior:
 
@@ -29,11 +29,11 @@ This application provides a graphical user interface for the OpenAI chat complet
 - Finish Reasons - The reason the model stopped generating the response. Unless you specified a stop text string in the parameters, the Finish Reason will generally be "Stop" which I understand to mean that the model decided it had reached the end of the response. If the API call fails, you will see a description of that here.
 - Response tab - The tab where the text of the model's response to your prompt will be displayed.
 
-<img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI_2.jpg" alt="Prompt Tab" width="700"/>
+    <img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI_2.jpg" alt="Prompt Tab" width="700"/>
 
 - Guide to Prompt Structure tab - this tab provides some brief guidance to prompting, and links to some other prompting resources.
 
-<img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI_3.jpg" alt="Prompt Tab" width="700"/>
+    <img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI_3.jpg" alt="Prompt Tab" width="700"/>
 
 API Key - In order to use this application, you will need an OpenAI API key. You can get one by creating an account at OpenAI.com and associating a credit card with your account.  Each API call cost a few cents at most. After 6 months of occasional use of the API, I have maybe spent $5.00.  My usage so far this month (6/12/2023) is $1.22.
 
@@ -43,7 +43,7 @@ API Key - In order to use this application, you will need an OpenAI API key. You
 
 This tool provides a gui for ticktoken that allows the user to paste a block of text into the text window, and then use the controls to count the tokens in the text.
 
-<img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" width="700"/>
+    <img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" width="700"/>
 
 
 
