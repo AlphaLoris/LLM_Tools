@@ -3,7 +3,7 @@
 <strong>openai_chat_gui</strong>
 
 
-    <img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI.jpg" alt="Prompt Tab" width="700"/>
+<img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/OpenAI_Chat_Completion_AI_UI.jpg" alt="Prompt Tab" width="700"/>
 
 This application provides a graphical user interface for the OpenAI chat completion API.  It allows you to choose one of their Large Language Models to interact with, provide values for all of the parameters that control the behavior of the LLM, build a prompt for the LLM, submit it, and then review the LLM's response. Here is a brief description of its features/behavior:
 
@@ -43,7 +43,7 @@ API Key - In order to use this application, you will need an OpenAI API key. You
 
 This tool provides a gui for ticktoken that allows the user to paste a block of text into the text window, and then use the controls to count the tokens in the text.
 
-    <img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" width="700"/>
+<img src="https://github.com/AlphaLoris/OpenAITools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" width="700"/>
 
 
 
