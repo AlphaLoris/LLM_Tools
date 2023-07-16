@@ -5,31 +5,31 @@ from tkinter import messagebox
 from tkinter import simpledialog
 import tiktoken
 import openai
-import keyring
 import json
 import textwrap
+import keyring.backends.macOS
+import keyring.backends.Windows
 
 """
 To build this script into an executable, run the following command from the root directory of the project:
 pyinstaller --hidden-import=tiktoken_ext.openai_public --hidden-import=tiktoken_ext --onefile openai_chat_gui.py
 
+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
 """
 
 
-def check_api_key(root):
+def check_api_key(root, keychain_path=None):
     # Attempt to retrieve the API key from the keyring
     print("Attempting to retrieve API Key from keyring")
     api_key = keyring.get_password("openai", "api_key")
-
     if not api_key:
         # Open a Tkinter dialogue to prompt the user for their OpenAI API Key
         print("API Key not retrieved from keyring. Prompting user for API Key")
-        api_key = get_api_key(root)
-
+        api_key = get_api_key(root, keychain_path)
     return api_key
 
 
-def get_api_key(root):
+def get_api_key(root, keychain_path=None):
     api_key = prompt_for_api_key(root)
 
     # Validate the API key
@@ -41,7 +41,7 @@ def get_api_key(root):
         # Notify the user in the Tkinter dialogue and allow them to correct the API Key
         print("API Key is invalid. Prompting user to correct API Key")
         notify_invalid_key(errors, api_key)
-        return check_api_key(root)
+        return check_api_key(root, keychain_path)
 
     # Write the API key to the keyring
     print("API Key is valid. Writing to keyring and returning it.", api_key)
@@ -69,7 +69,7 @@ class CustomDialog(simpledialog.Dialog):
 def prompt_for_api_key(root):
     print("Opening dialog to prompt user for API Key")
     dialog = CustomDialog(root, "OpenAI API Key")
-    api_key = dialog.result
+    api_key = dialog.result.strip()
     return api_key
 
 
@@ -149,7 +149,7 @@ def num_tokens_from_messages(messages, model):
         "gpt-4-32k-0314",
         "gpt-4-0613",
         "gpt-4-32k-0613",
-        }:
+    }:
         tokens_per_message = 3
         tokens_per_name = 1
     elif model == "gpt-3.5-turbo-0301":
@@ -163,7 +163,9 @@ def num_tokens_from_messages(messages, model):
         return num_tokens_from_messages(messages, model="gpt-4-0613")
     else:
         raise NotImplementedError(
-            f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
+            f"""num_tokens_from_messages() is not implemented for model {model}
+            . See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are
+             converted to tokens."""
         )
     num_tokens = 0
     for message in messages:
@@ -275,7 +277,7 @@ class PromptUI:
         self.prompt_notebook.add(self.prompt_structure_tab, text=" Guide to Prompt Structure ")
 
         prompt_structure_text = textwrap.dedent("""Context Window Size (in tokens):
-        
+
 gpt-4: 8192
 gpt-4-0613: 8192
 gpt-4-0314: 8192
@@ -286,7 +288,7 @@ gpt-3.5-turbo: 4096
 gpt-3.5-turbo-16k: 16384
 gpt-3.5-turbo-0613: 4096
 gpt-3.5-turbo-0301: 4096
-        
+
 Guide to Structuring a Chat Completion prompt for OpenAI LLMs
 
 Note: the maximum length of a prompt is limited by the context window size. This is the sum of all of the tokens in the message components, plus the tokens that OpenAI adds to the prompt, and the tokens in the response.
@@ -316,9 +318,9 @@ This prompt would be built in this GUI by creating message components for each o
 Resilience is like a tree that bends with the wind but never breaks. It is the ability to bounce back from adversity and keep moving forward, even when things get tough. Just like a tree that grows stronger with each storm it weathers, resilience is a quality that can be developed and strengthened over time.
 
 This example is paraphrased from the OpenAI ChatGPT Prompt Engineering for Developers course on deeplearning.ai:
-        
+
 https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/
-        
+
 Further guidance on prompting can be found here: 
 
 https://www.promptingguide.ai/
@@ -435,7 +437,7 @@ https://www.promptingguide.ai/
         max_tokens_label_tooltip_text = "The max_tokens parameter specifies the maximum number of tokens the model is\n" \
                                         "to generate in the chat completion. The total length of input tokens and\n" \
                                         "generated tokens is limited by the model's context window. For GPT-4,\n" \
-                                        "the context length is 8192 tokens, So the max_tokens value is limited to\n"\
+                                        "the context length is 8192 tokens, So the max_tokens value is limited to\n" \
                                         "the context length - prompt message tokens, but the value you assign can\n" \
                                         "be less than that."
         ToolTip(self.max_tokens_label, max_tokens_label_tooltip_text)
@@ -638,12 +640,21 @@ https://www.promptingguide.ai/
 
     # Method to add message component to the list and update the token count
     # TODO: Update this so that it counts the tokens for all of the message components.
+    """
     def add_message_component(self, content):
         print("Adding message component")
         self.message_components.append({'role': tk.StringVar(), 'content': content})
 
         self.token_count.set(num_tokens_from_messages([{'role': 'user', 'content': content}],
                                                       model=self.model_var.get()))
+    """
+
+    def add_message_component(self, content):
+        print("Adding message component")
+        self.message_components.append({'role': tk.StringVar(), 'content': content})
+
+        # Include all the message components in the token count
+        self.token_count.set(num_tokens_from_messages(self.message_components, model=self.model_var.get()))
 
     # Method to update the message component list in the main window
     def update_message_component_list(self):
@@ -696,6 +707,7 @@ https://www.promptingguide.ai/
             self.update_message_component_list()
 
     # Method to edit the message component
+    """
     def edit_message_component(self, item):
         def save_changes():
             print(f"Saving changes to message component")
@@ -706,6 +718,20 @@ https://www.promptingguide.ai/
             message_component_window.destroy()
 
         print(f"Editing message component")
+    """
+
+    def edit_message_component(self, item):
+        def save_changes():
+            print(f"Saving changes to message component")
+            item['content'] = text_box.get("1.0", "end-1c")
+            self.update_message_component_list()
+
+            # Include all the message components in the token count
+            self.token_count.set(num_tokens_from_messages(self.message_components, model=self.model_var.get()))
+
+            message_component_window.destroy()
+        print(f"Editing message component")
+
         message_component_window = tk.Toplevel(self.root)
         message_component_window.geometry("800x800")
         text_box = ScrolledText(message_component_window, wrap=tk.WORD)
@@ -1057,7 +1083,7 @@ https://www.promptingguide.ai/
         finish_reason_label.grid(row=5, column=0, columnspan=2, padx=5, pady=2, sticky="w")
 
         note_label = tk.Label(text="The response message can be viewed on the Response Tab.", font=("Helvetica", 10,
-                                                                                                  "italic", "bold"))
+                                                                                                    "italic", "bold"))
         note_label.grid(row=6, column=0, columnspan=2, padx=5, pady=2, sticky="nw")
 
         response_text = ScrolledText(self.results_tab, wrap=tk.WORD)
@@ -1068,7 +1094,10 @@ https://www.promptingguide.ai/
 
 
 def populate_model_list(context_window, api_key):
-    """Iterates through the set of models in the context_window global variable and tries an api call for that model using the is_valid_api_key_model function. If the API call is successful, adds the model name to the model_list, otherwise proceeds to the next model in the context_window list. When all models have been tested, returns the model_list.
+    """Iterates through the set of models in the context_window global variable and tries an api call for that model
+     using the is_valid_api_key_model function. If the API call is successful, adds the model name to the model_list,
+     otherwise proceeds to the next model in the context_window list. When all models have been tested, returns the
+     model_list.
 
   Args:
     api_key: The OpenAI API key to use for the API calls.
@@ -1100,8 +1129,9 @@ if __name__ == "__main__":
         "gpt-3.5-turbo-0613": 4096,
         "gpt-3.5-turbo-0301": 4096
     }
+    api_key = None
     app_root = tk.Tk()
-    openai.api_key = check_api_key(app_root)
+    openai.api_key = check_api_key(app_root, api_key)
     model_list = populate_model_list(context_windows, openai.api_key)
     app = PromptUI(app_root, model_list, context_windows, openai.api_key)
     app_root.mainloop()
