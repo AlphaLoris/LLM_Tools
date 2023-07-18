@@ -171,9 +171,22 @@ def num_tokens_from_messages(messages, model):
     for message in messages:
         num_tokens += tokens_per_message
         for key, value in message.items():
-            num_tokens += len(encoding.encode(value))
-            if key == "name":
-                num_tokens += tokens_per_name
+            if isinstance(value, str):
+                # Encode strings
+                num_tokens += len(encoding.encode(value))
+            elif isinstance(value, (int, float)):
+                # Convert numbers to strings
+                num_tokens += len(encoding.encode(str(value)))
+            elif isinstance(value, (list, dict)):
+                # Handle iterables separately
+                num_tokens += len(value)
+            else:
+                # For other types, try converting to string
+                try:
+                    str_value = str(value)
+                    num_tokens += len(encoding.encode(str_value))
+                except:
+                    print(f"Could not handle value: {value}")
     num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
     return num_tokens
 
