@@ -866,6 +866,7 @@ https://www.promptingguide.ai/
                     if isinstance(response, dict):
                         response_str = json.dumps(response)
                         extracted_json = self.extract_json_from_response(response_str)
+                        print(f"JSON extracted from response_str for {file}: {extracted_json}")
                     else:
                         # Log an error message for unexpected response types
                         print(f"Unexpected response type {type(response)} when processing. Expected a dictionary.")
@@ -881,13 +882,19 @@ https://www.promptingguide.ai/
                     self.save_expanded_json_to_excel(output_directory, validated_json)
 
                     work_order_json = None
+                    print(f"Extracting work order JSON for {file}")
+                    print(f"Choices is in extracted json: ", 'choices' in extracted_json)
+                    print(f"Number of choices: ", len(extracted_json['choices']))
+                    print("\n\n\n\n\n\n\n\n**************\n\n\n\n\n\n\n\n")
                     if extracted_json and 'choices' in extracted_json and len(extracted_json['choices']) > 0:
-                        content_str = extracted_json['choices'][0].get('content', "")
+                        content_str = extracted_json['choices'][0]['message'].get('content', "")
+                        print(f"Content string for {file}: {content_str}")
                         work_order_json = self.extract_json_from_response(content_str)
                         print(f"Work order JSON for {file}: {work_order_json}")
 
                     # Save the work order to Excel
                     if work_order_json:
+                        print(f"Saving work order JSON for {file} in run_test()")
                         self.save_work_order_to_excel(output_directory, work_order_json, schema)
 
                 except Exception as e:
@@ -1008,6 +1015,7 @@ https://www.promptingguide.ai/
 
         # Convert JSON to a DataFrame for the main data
         df_main = pd.json_normalize(work_order_json)
+        print(f"df_main:  \n", df_main)
 
         # Handle arrays based on schema
         for key, value in schema["properties"].items():
@@ -1023,17 +1031,26 @@ https://www.promptingguide.ai/
                         except (IndexError, KeyError):
                             df_main[col_name] = None
 
-        # Save to Excel
+        # If the Excel file doesn't exist, create it
         if not os.path.exists(file_path):
             with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
                 df_main.to_excel(writer, sheet_name="Work Orders", index=False)
         else:
+            # If the Excel file exists, append the new work order data to the existing data
             with pd.ExcelWriter(file_path, engine='openpyxl', mode='a') as writer:
                 workbook = load_workbook(file_path)
                 writer._book = workbook
+
+                # If the "Work Orders" sheet exists, load the existing data and append the new data
                 if "Work Orders" in workbook.sheetnames:
+                    df_existing = pd.read_excel(file_path, sheet_name='Work Orders', engine='openpyxl')
+                    df_combined = pd.concat([df_existing, df_main], ignore_index=True)
+                    # Delete the old sheet to write the updated one
                     del writer.book["Work Orders"]
-                df_main.to_excel(writer, sheet_name="Work Orders", index=False)
+                    df_combined.to_excel(writer, sheet_name="Work Orders", index=False)
+                else:
+                    # If the "Work Orders" sheet doesn't exist, simply write the new work order data
+                    df_main.to_excel(writer, sheet_name="Work Orders", index=False)
 
     def submit_test_prompt(self, test_message_components, output_dir):
         """
