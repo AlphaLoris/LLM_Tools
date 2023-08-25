@@ -22,7 +22,7 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
         raise NotImplementedError(f"""num_tokens_from_messages() is not presently implemented for model {model}.""")
 
 
-def split_text(text, max_tokens=4000, separator="\n\n---------divider---------\n\n"):
+def split_text(text, max_tokens=8000, separator="\n\n---------divider---------\n\n"):
     blocks = []
     current_block = []
     current_tokens = 0

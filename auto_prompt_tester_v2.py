@@ -1,14 +1,20 @@
+import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox
 from tkinter import simpledialog
+from tkinter import filedialog
 import tiktoken
 import openai
 import json
 import textwrap
 import keyring.backends.macOS
 import keyring.backends.Windows
+from jsonschema import validate, ValidationError
+import datetime
+import pandas as pd
+from openpyxl import load_workbook
 
 """
 To build this script into an executable, run the following command from the root directory of the project:
@@ -189,23 +195,110 @@ def num_tokens_from_messages(messages, model):
     return num_tokens
 
 
+def send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens, presence_penalty, frequency_penalty, logit_bias, user):
+
+    # Ensure OpenAI library is imported
+    import openai
+
+    # Helper function to extract and print StringVar parameters
+    def extract_string_var(value, name):
+        if isinstance(value, tk.StringVar):
+            print(f"'{name}' was a StringVar. Extracting its value.")
+            return value.get()
+        return value
+
+    model = extract_string_var(model, "model")
+    temperature = extract_string_var(temperature, "temperature")
+    top_p = extract_string_var(top_p, "top_p")
+    n = extract_string_var(n, "n")
+    max_tokens = extract_string_var(max_tokens, "max_tokens")
+    presence_penalty = extract_string_var(presence_penalty, "presence_penalty")
+    frequency_penalty = extract_string_var(frequency_penalty, "frequency_penalty")
+    user = extract_string_var(user, "user")
+
+    # For lists like 'stop' and 'logit_bias', ensure they are extracted properly if they are in StringVar
+    stop = [extract_string_var(s, "stop item") for s in stop]
+    logit_bias = {k: extract_string_var(v, f"logit_bias for token {k}") for k, v in logit_bias.items()}
+
+    # Prepare the payload
+    payload = {
+        "model": model,
+        "messages": prompt,
+        "temperature": temperature,
+        "top_p": top_p,
+        "n": n,
+        "stream": stream,
+        "stop": stop,
+        "max_tokens": max_tokens,
+        "presence_penalty": presence_penalty,
+        "frequency_penalty": frequency_penalty,
+        "logit_bias": logit_bias,
+        "user": user
+    }
+
+    print("Sending request to OpenAI in send_request function...")
+
+    # Use the OpenAI library to send the request
+    try:
+        response = openai.ChatCompletion.create(**payload)
+        return response
+    except openai.OpenAIError as e:
+        print(f"Error while sending request to OpenAI: {e}")
+        return None
+
+
+"""
+# Revised send_request function -- never used yet.
+def send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens,
+                 presence_penalty, frequency_penalty, logit_bias, user):
+
+    # Log the beginning of the request
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{current_time}] Sending request to LLM API for model: {model}")
+
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+        "User-Agent": "OpenAI Python v0.0.1"
+    }
+
+    data = {
+        "model": model,
+        "prompt": prompt,
+        "temperature": temperature,
+        "top_p": top_p,
+        "n": n,
+        "stream": stream,
+        "stop": stop,
+        "max_tokens": max_tokens,
+        "presence_penalty": presence_penalty,
+        "frequency_penalty": frequency_penalty,
+        "logit_bias": logit_bias,
+        "user": user
+    }
+
+    try:
+        response = requests.post(API_ENDPOINT, headers=headers, json=data)
+        response.raise_for_status()
+
+        # Log the successful completion of the request
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{current_time}] Successfully received response from LLM API for model: {model}")
+
+    except requests.RequestException as e:
+        # Log any exception that occurs
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{current_time}] Error encountered while making request to LLM API: {str(e)}")
+        raise e  # Re-raise the exception for upstream handling
+
+    return response.json()
+"""
+
+"""
+# Original send_request function
 def send_request(model: object, messages: object, temperature: object, top_p: object, n: object, stream: object,
                  stop: object, max_tokens: object, presence_penalty: object, frequency_penalty: object,
                  logit_bias: object, user: object) -> object:
-    """
-    :param user:
-    :param frequency_penalty:
-    :param presence_penalty:
-    :param max_tokens:
-    :param stop:
-    :param stream:
-    :param n:
-    :param top_p:
-    :param temperature:
-    :param messages:
-    :param model:
-    :type logit_bias: object
-    """
 
     # Create request dictionary
     request_body = {
@@ -244,34 +337,8 @@ def send_request(model: object, messages: object, temperature: object, top_p: ob
     print("Response:\n", json.dumps(response.to_dict(), indent=4))
 
     return response
-
-
-# The send_request function submits the prompt to the Chat Completion API - Original Request
 """
-def send_request(model: object, prompt: object, temperature: object, top_p: object, n: object, stream: object,
-                 stop: object, max_tokens: object, presence_penalty: object, frequency_penalty: object,
-                 logit_bias: object, user: object) -> object:
 
-    print("Sending request to OpenAI API...", "model = ", model, "\ntemperature = ", temperature, "\ntop_p = ", top_p,
-          "\nn = ", n, "\nstream = ", stream, "\nstop = ", stop, "\nmax_tokens = ", max_tokens, "\npresence_penalty = ",
-          presence_penalty, "\nfrequency_penalty = ", frequency_penalty, "\nlogit_bias = ", logit_bias,
-          "\nuser = ", user)
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=prompt,
-        temperature=temperature,
-        top_p=top_p,
-        n=n,
-        stream=stream,
-        stop=stop,
-        max_tokens=max_tokens,
-        presence_penalty=presence_penalty,
-        frequency_penalty=frequency_penalty,
-        logit_bias=logit_bias,
-        user=user
-    )
-    return response
-"""
 
 # Main UI
 class ResultsTab(tk.Frame):
@@ -314,6 +381,7 @@ class ToolTip:
 
 class PromptUI:
     def __init__(self, root, model_list, context_windows, api_key):
+        self.select_schema_file = None
         self.root = root
         self.model_list = model_list
         self.api_key = api_key
@@ -327,8 +395,13 @@ class PromptUI:
 
         self.prompt_tab = tk.Frame(self.prompt_notebook)
         self.prompt_notebook.add(self.prompt_tab, text=" Prompt ")
+
         self.results_tab = ResultsTab(self.prompt_notebook)
         self.prompt_notebook.add(self.results_tab, text=" Response ")
+
+        self.prompt_test_tab = tk.Frame(self.prompt_notebook)
+        self.prompt_notebook.add(self.prompt_test_tab, text=" Test Prompt ")
+
         self.prompt_structure_tab = tk.Frame(self.prompt_notebook)
         self.prompt_notebook.add(self.prompt_structure_tab, text=" Guide to Prompt Structure ")
 
@@ -624,6 +697,587 @@ https://www.promptingguide.ai/
         self.response_frame = tk.Frame(root)
         self.response_frame.grid(row=5, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
+        # Prompt Test Tab
+        # Source Directory
+        self.source_dir = tk.StringVar()
+        self.source_dir_entry = tk.Entry(self.prompt_test_tab, textvariable=self.source_dir, width=50)
+        self.source_dir_entry.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+        self.source_dir_button = tk.Button(self.prompt_test_tab, text="Source Directory",
+                                           command=self.select_source_dir)
+        self.source_dir_button.grid(row=0, column=1, padx=10, sticky="w")  # Same row as the Entry, next column
+
+        # Output Directory
+        self.output_dir = tk.StringVar()
+        self.output_dir_entry = tk.Entry(self.prompt_test_tab, textvariable=self.output_dir, width=50)
+        self.output_dir_entry.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+
+        self.output_dir_button = tk.Button(self.prompt_test_tab, text="Output Directory",
+                                           command=self.select_output_dir)
+        self.output_dir_button.grid(row=1, column=1, padx=10, sticky="w")
+
+        # schema file
+        self.schema_file = tk.StringVar()
+        self.schema_file_entry = tk.Entry(self.prompt_test_tab, textvariable=self.schema_file, width=50)
+        self.schema_file_entry.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+
+        self.schema_file_button = tk.Button(self.prompt_test_tab, text="Schema File",
+                                            command=self.select_schema_file)
+        self.schema_file_button.grid(row=2, column=1, padx=10, sticky="w")
+
+        # Test Button
+        self.test_button = tk.Button(self.prompt_test_tab, text="Test",
+                                     command=self.run_test)
+        self.test_button.grid(row=3, columnspan=2, padx=10, pady=10, sticky="w")
+
+        # Token Totals
+        self.prompt_token_total = tk.StringVar(value="Prompt Tokens: 0")
+        self.completion_token_total = tk.StringVar(value="Completion Tokens: 0")
+        self.combined_token_total = tk.StringVar(value="Combined Tokens: 0")
+
+        # Labels to display the token totals
+        self.prompt_token_label = tk.Label(self.prompt_test_tab, textvariable=self.prompt_token_total)
+        self.prompt_token_label.grid(row=4, column=0, padx=10, pady=10, sticky="w")
+
+        self.completion_token_label = tk.Label(self.prompt_test_tab, textvariable=self.completion_token_total)
+        self.completion_token_label.grid(row=5, column=0, padx=10, pady=10, sticky="w")
+
+        self.combined_token_label = tk.Label(self.prompt_test_tab, textvariable=self.combined_token_total)
+        self.combined_token_label.grid(row=6, column=0, padx=10, pady=10, sticky="w")
+
+    def select_source_dir(self):
+        """Open file dialog to select source directory"""
+        source_dir = filedialog.askdirectory()
+        self.source_dir.set(source_dir)
+        print("Selected source directory:", source_dir)
+
+    def select_output_dir(self):
+        """Open file dialog to select output directory"""
+        output_dir = filedialog.askdirectory()
+        self.output_dir.set(output_dir)
+        print("Selected output directory:", output_dir)
+
+    def select_schema_file(self):
+        """Open file dialog to select schema file"""
+        schema_file = filedialog.askopenfilename()
+        self.schema_file.set(schema_file)
+        print("Selected schema file:", schema_file)
+
+    def run_test(self):
+
+        # Initialize the schema variable
+        schema = None
+
+        print("Running test...")
+        try:
+            # Load the JSON schema from the file
+            with open(self.schema_file.get(), 'r') as schema_f:
+                schema = json.load(schema_f)
+        except FileNotFoundError:
+            print("Error: The schema file was not found.")
+            return  # Exit the method if the schema file is not found
+        except json.JSONDecodeError:
+            print("Error: The schema file does not contain valid JSON.")
+            return  # Exit the method if the schema is not valid JSON
+        except PermissionError:
+            print("Error: Permission denied when trying to read the schema file.")
+            return  # Exit the method if there's a permission error
+
+        # If schema is None after the above operations, something went wrong.
+        # We should not proceed with the rest of the method.
+        if not schema:
+            print("Error: Failed to load the JSON schema. Aborting the test run.")
+            return
+
+        total_prompt_tokens = 0
+        total_completion_tokens = 0
+        total_combined_tokens = 0
+
+        with open(os.path.join(self.output_dir.get(), "generated_composite_prompts.txt"),
+                  "w") as generated_prompts_file, \
+                open(os.path.join(self.output_dir.get(), "raw_responses.txt"), "w") as raw_responses_file:
+
+            for file in os.listdir(self.source_dir.get()):
+                print("Processing file:", file)
+
+                with open(os.path.join(self.source_dir.get(), file)) as f:
+                    content = f.read()
+                print(f"File content of {file}: {content[:100]}...")  # printing the first 100 characters of content
+
+                # Make a fresh copy of the prompt template for each file
+                # test_message_components = copy.deepcopy(self.message_components)
+
+                test_message_components = []
+
+                for msg in self.message_components:
+                    print(f"Processing message: {msg}")
+                    print(f"msg['role'] type: {type(msg['role'])}, value: {msg['role']}")
+                    test_msg = {
+                        'role': msg['role'].get() if isinstance(msg['role'], tk.StringVar) else msg['role'],
+                        # get value if StringVar
+                        'content': msg['content']  # copy string content
+                    }
+                    print(f"Constructed test message: {test_msg}")
+                    test_message_components.append(test_msg)
+
+                # Replace delimiter in test_message_components with file content
+                for message in test_message_components:
+                    message["content"] = message["content"].replace("--{?}--", content)
+                    print(f"Message after delimiter replacement: {message['content'][:100]}...")  # first 100 characters
+
+                # Write generated prompt to file
+                generated_prompts_file.write(json.dumps(test_message_components))
+                generated_prompts_file.write('\n\n------------------------------\n\n')  # for better readability
+                print(f"Written generated prompt for {file}")
+
+                # Check context length
+                num_tokens = num_tokens_from_messages(test_message_components, self.model_var.get())
+                if num_tokens > self.context_length.get():
+                    # Handle too long prompt
+                    continue
+
+                # Submit prompt
+                try:
+                    print(f"Submitting prompt for {file}: {test_message_components}")
+                    response = self.submit_test_prompt(test_message_components, self.output_dir.get())
+
+                    print(f"Received response for {file}: {response}")
+                    # Write raw response to file
+                    raw_responses_file.write(json.dumps(response))
+                    raw_responses_file.write('\n\n------------------------------\n\n')  # for better readability
+
+                    # Update token counts
+                    if isinstance(response, dict):
+                        print(f"Updating total_prompt_tokens count for {file}")
+                        total_prompt_tokens += response.get('usage', {}).get("prompt_tokens", 0)
+                        print(f"Updating total_completion_tokens count for {file}")
+                        total_completion_tokens += response.get('usage', {}).get("completion_tokens", 0)
+                        print(f"Updating total_combined_tokens count for {file}")
+                        total_combined_tokens += response.get('usage', {}).get("total_tokens", 0)
+                    else:
+                        print(
+                            f"Warning: Unexpected response type for {file}. Expected a dictionary but got {type(response)}.")
+
+                    self.prompt_token_total.set(f"Prompt Tokens: {total_prompt_tokens}")
+                    self.completion_token_total.set(f"Completion Tokens: {total_completion_tokens}")
+                    self.combined_token_total.set(f"Combined Tokens: {total_combined_tokens}")
+
+                    # Handle JSON extraction and validation
+                    if isinstance(response, dict):
+                        response_str = json.dumps(response)
+                        extracted_json = self.extract_json_from_response(response_str)
+                    else:
+                        # Log an error message for unexpected response types
+                        print(f"Unexpected response type {type(response)} when processing. Expected a dictionary.")
+                        # Optionally, raise an exception to halt the process (if this is considered a critical error)
+                        # raise TypeError(f"Unexpected response type {type(response)}. Expected a dictionary.")
+                    validated_json = self.validate_and_capture_json(extracted_json,
+                                                                    schema)
+
+                    # Save the validated JSON with validation details to Excel
+                    print(f"Saving validated JSON for {file} in run_test()")
+                    self.save_expanded_json_to_excel(self.output_dir.get(), validated_json, schema)
+
+                except Exception as e:
+                    # Handle errors during prompt submission, writing to file, or JSON handling
+                    print(f"Error processing file {file}: {str(e)}")
+                    pass
+
+    def submit_test_prompt(self, test_message_components, output_dir):
+        """
+        The declaration for the send request method is: def send_request(model, prompt, temperature, top_p, n, stream,
+        stop, max_tokens, presence_penalty, frequency_penalty, logit_bias, user):
+        """
+
+        # Validate model based on the available models supported by the API
+        """
+        Valid values: gpt-4, gpt-3.5-turbo, gpt-3.5-turbo-0301, gpt-4-0314, gpt-4-32k (not yet available)
+        """
+        print("Validating parameters and submitting prompt to LLM API")
+        if not self.validate_model():
+            return
+        print(f"Attempting to get the model value.")
+        model = self.model_var.get()
+        print(f"Got the model value.")
+
+        # Assemble the prompt and validate the total number of tokens
+        messages_list = []
+        """
+        Required. Messages is an array of messages in the format "[role]":"[message]".
+        """
+        for item in test_message_components:
+            # role = item['role'].get()
+            role = item['role']
+            content = item['content']
+            messages_list.append({'role': role, 'content': content})
+
+        # Validate the total number of tokens in the prompt
+        total_tokens = num_tokens_from_messages(messages_list, model=self.model_var.get())
+        context_length = self.context_windows[model]
+        print(f"Total number of tokens: {total_tokens}")
+        print(f"Context length: {context_length}")
+        if total_tokens > context_length:
+            messagebox.showerror("Error", f"The total number of tokens in the prompt exceeds {context_length}. "
+                                          f"Please reduce the length of the prompt.")
+
+            print(f"Total number of tokens in the message set is too great: {total_tokens}")
+            return
+        else:
+            prompt = messages_list
+            print(f"Constructed prompt: {prompt}")
+
+        # Validate temperature between 0 and 2
+        """
+        Optional. Temperature is a number that defaults to 1. It indicates what sampling temperature to use, between
+        0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it
+        more focused and deterministic. It is generally recommend altering this or top_p but not both.
+        """
+        try:
+            temperature = float(self.temperature_entry.get())
+            if temperature < 0 or temperature > 2:
+                raise ValueError("Invalid temperature value")
+        except ValueError:
+            message_box = CustomMessageBox(
+                self.parameters_frame, "Invalid temperature value",
+                "Invalid temperature value entered. Continue with the default value (0.7) or return to the UI to"
+                " provide a valid value?"
+            )
+            if message_box.result:
+                temperature = 0.7
+            else:
+                return
+
+        # Validate top_p between 0 and 1
+        """
+        Optional. Top_p is a number that defaults to 1. It is an alternative to sampling with temperature, called
+        nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means
+        only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or
+        temperature but not both.
+        """
+        # Validate top_p between 0 and 1
+        try:
+            top_p = float(self.top_p_entry.get())
+            if top_p < 0 or top_p > 1:
+                raise ValueError("Invalid top_p value")
+        except ValueError:
+            message_box = CustomMessageBox(
+                self.parameters_frame, "Invalid top_p value",
+                "Invalid top_p value entered. Continue with the default value (1) or return to the main window to "
+                "provide a valid value?"
+            )
+            if message_box.result:
+                top_p = 1
+            else:
+                return
+
+        # Validate n between 1 and 4
+        """
+        Optional. N is an integer between 1 and 4 that defaults to 1. It controls the number of completions to
+        generate. If n is greater than 1, the API will return a list of completions. If the value is set to 1, only
+        the best completion will be returned.
+        """
+        try:
+            n = int(self.n_entry.get())
+            if n < 1 or n > 4:
+                raise ValueError("Invalid n value")
+        except ValueError:
+            message_box = CustomMessageBox(
+                self.parameters_frame, "Invalid n value",
+                "Invalid n value entered. Continue with the default value (1) or return to the main window to provide"
+                " a valid value?"
+            )
+            if message_box.result:
+                n = 1
+            else:
+                return
+
+        # Set the stream to False
+        """
+        Optional. Stream is a boolean that defaults to false. If set, partial message deltas will be sent, like in
+        ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream
+        terminated by a data: [DONE] message.
+        """
+        stream = False  # self.stream_entry.get()
+
+        # Validate stop
+        """
+        Optional. Stop is a string or array of up to 4 sequences where the API will stop generating further tokens.
+        """
+        try:
+            stop = self.stop_entry.get()
+            if stop:
+                # Remove leading/trailing spaces and quotation marks
+                stop = [s.strip().strip('\'"') for s in stop.split(',')]
+                if len(stop) > 4:
+                    raise ValueError("Too many stop sequences")
+        except ValueError:
+            message_box = CustomMessageBox(
+                self.parameters_frame, "Invalid stop value",
+                "Invalid stop value entered. Continue with the default value (empty) or return to the main window to"
+                " provide a valid value?"
+            )
+            if message_box.result:
+                stop = []
+            else:
+                return
+
+        # Validate max_tokens based on the number of tokens in the prompt
+        """
+        Optional. Max_tokens is an integer that defaults to infinite. It indicates the maximum number of tokens the
+        model is to generate in the chat completion. The total length of input tokens and generated tokens is limited
+        by the model's context length. For GPT-4, the context length is 4096 tokens.
+        """
+        # TODO: Validate max_tokens based on the number of tokens in the context window for the selected model
+        try:
+            max_tokens_str = self.max_tokens_entry.get()
+            if not max_tokens_str:
+                max_tokens = None
+            else:
+                max_tokens = int(max_tokens_str)
+                if max_tokens < 1 or max_tokens > self.context_windows:
+                    raise ValueError("Invalid max_tokens value")
+        except ValueError:
+            message_box = CustomMessageBox(
+                self.parameters_frame, "Invalid max_tokens value",
+                "Invalid max_tokens value entered. Continue with the default value (infinite) or return to the main"
+                " window to provide a valid value?"
+            )
+            if message_box.result:
+                max_tokens = None
+            else:
+                return
+
+        # Validate presence_penalty
+        """
+        Optional. Presence_penalty is a number between -2.0 and 2.0 that defaults to 0. Positive values penalize new
+        tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new
+        topics.
+        """
+        try:
+            presence_penalty_str = self.presence_penalty_entry.get()
+            if not presence_penalty_str:
+                presence_penalty = 0
+            else:
+                presence_penalty = float(presence_penalty_str)
+                if presence_penalty < -2.0 or presence_penalty > 2.0:
+                    raise ValueError("Invalid presence_penalty value")
+        except ValueError:
+            message_box = CustomMessageBox(
+                self.parameters_frame, "Invalid presence_penalty value",
+                "Invalid presence_penalty value entered. Continue with the default value (0) or return to the main"
+                " window to provide a valid value?"
+            )
+            if message_box.result:
+                presence_penalty = 0
+            else:
+                return
+
+        # Validate frequency_penalty
+        """
+        Optional. Frequency_penalty is a number between -2.0 and 2.0 that defaults to 0. Positive values penalize new
+        tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the
+        same line verbatim.
+        """
+        try:
+            frequency_penalty_str = self.frequency_penalty_entry.get()
+            if not frequency_penalty_str:
+                frequency_penalty = 0
+            else:
+                frequency_penalty = float(frequency_penalty_str)
+                if frequency_penalty < -2.0 or frequency_penalty > 2.0:
+                    raise ValueError("Invalid frequency_penalty value")
+        except ValueError:
+            message_box = CustomMessageBox(
+                self.parameters_frame, "Invalid frequency_penalty value",
+                "Invalid frequency_penalty value entered. Continue with the default value (0) or return to the main"
+                " window to provide a valid value?"
+            )
+            if message_box.result:
+                frequency_penalty = 0
+            else:
+                return
+
+        # Get the logit_bias value and parse it into a dictionary
+        """
+        Optional. Logit_bias is a map that defaults to null. It modifies the likelihood of specified tokens appearing
+        in the completion. It accepts a json object that maps tokens (specified by their token ID in the tokenizer) to
+        an associated bias value from -100 to 100. Mathematically, the bias is added to the logits generated by the
+        model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or
+        increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of
+        the relevant token.
+        """
+        logit_bias_str = self.logit_bias_entry.get()
+        if not logit_bias_str.strip():  # Treat an empty value as acceptable
+            logit_bias = {}
+        else:
+            try:
+                logit_bias = json.loads(logit_bias_str)
+            except json.JSONDecodeError:
+                print("Invalid JSON: ", logit_bias_str)
+                logit_bias = {}  # Use an empty dictionary if the value is not valid JSON
+
+        # Get the user value
+        """
+        Optional. User is a string that defaults to null. The length should not exceed 256 characters. User is a unique
+        identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
+        """
+        user = self.user_entry.get()
+        if len(user) > 256:
+            message_box = CustomMessageBox(
+                self.parameters_frame, "Invalid user value",
+                "User value exceeds 256 characters. Continue with the default value (null) or return to the main window"
+                " to provide a valid value?"
+            )
+            if message_box.result:
+                user = None
+            else:
+                return
+
+        # (model, prompt, temperature, top_p, n, stop, max_tokens, presence_penalty, frequency_penalty, logit_bias,
+        #  user)
+        print("Parameters validated. Sending request...")
+
+        # TODO: Add a delimiter between the requests for each file
+        # Add the elements that will compose the request to the request file in the output directory
+        request = {
+            "model": model,
+            "prompt": prompt,
+            "temperature": temperature,
+            "top_p": top_p,
+            "n": n,
+            "stream": stream,
+            "stop": stop,
+            "max_tokens": max_tokens,
+            "presence_penalty": presence_penalty,
+            "frequency_penalty": frequency_penalty,
+            "logit_bias": logit_bias,
+            "user": user
+        }
+        with open(os.path.join(output_dir, "request.json"), "w") as request_file:
+            json.dump(request, request_file, indent=4)
+
+        print("Sending request with the following parameters:")
+        print(f"Model: {model}")
+        print(f"Prompt: {prompt}")
+        print(f"Temperature: {temperature}")
+        print(f"Top_p: {top_p}")
+        print(f"N: {n}")
+        print(f"Stream: {stream}")
+        print(f"Stop: {stop}")
+        print(f"Max tokens: {max_tokens}")
+        print(f"Presence penalty: {presence_penalty}")
+        print(f"Frequency penalty: {frequency_penalty}")
+        print(f"Logit bias: {logit_bias}")
+        print(f"User: {user}")
+        # Send the request
+        response = send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens, presence_penalty,
+                                frequency_penalty, logit_bias, user)
+        print(f"Received response: {response}")
+        self.display_response(response)
+        return response
+
+    def extract_json_from_response(self, response):
+        """
+        Extracts a JSON object from a string that might have other text.
+
+        Args:
+        - response (str): The string containing the JSON object.
+
+        Returns:
+        - dict: The extracted JSON object or None if extraction failed.
+        """
+
+        start_pos = response.find('{')
+        if start_pos == -1:
+            return None  # No opening brace found
+
+        for end_pos in range(response.rfind('}') + 1, start_pos, -1):
+            # Try to parse the substring as JSON
+            try:
+                potential_json_str = response[start_pos:end_pos]
+                return json.loads(potential_json_str)
+            except json.JSONDecodeError:
+                continue
+        return None
+
+    def validate_and_capture_json(self, data, schema):
+        try:
+            validate(data, schema)
+            expanded_json = {
+                "validity_status": True,
+                "validation_errors": [],
+                "original_json": data,
+                "validation_timestamp": datetime.datetime.now().isoformat()
+            }
+            return expanded_json
+        except ValidationError as e:
+            error_details = {
+                "message": e.message,
+                "path": list(e.path),
+                "validator": e.validator,
+                "validator_value": e.validator_value,
+                "instance_value": e.instance
+            }
+            expanded_json = {
+                "validity_status": False,
+                "validation_errors": [error_details],
+                "original_json": data,
+                "validation_timestamp": datetime.datetime.now().isoformat()
+            }
+            return expanded_json
+
+    def save_expanded_json_to_excel(self, directory, expanded_json, schema):
+        file_path = os.path.join(directory, "validation_results.xlsx")
+        # ... rest of your initial checks ...
+
+        # If the file doesn't exist, create it
+        if not os.path.exists(file_path):
+            with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+                df_summary = pd.DataFrame(columns=["File Name", "Validation Status", "Timestamp", "Error Count"])
+                df_summary.to_excel(writer, sheet_name='Summary', index=False)
+                df_originals = pd.DataFrame()
+                df_originals.to_excel(writer, sheet_name='Original_JSONs', index=False)
+
+        # Now, process the existing (or newly created) Excel file
+        with pd.ExcelWriter(file_path, engine='openpyxl', mode='a') as writer:
+            workbook = load_workbook(file_path)
+            writer._book = workbook
+
+            # Append to the Summary sheet
+            if 'Summary' in workbook.sheetnames:
+                df_summary = pd.read_excel(file_path, sheet_name='Summary', engine='openpyxl')
+                # Delete the old sheet to write a new updated one
+                del writer.book['Summary']
+            else:
+                df_summary = pd.DataFrame(columns=["File Name", "Validation Status", "Timestamp", "Error Count"])
+
+            new_row = {
+                "File Name": "current_file_name",  # Replace with the actual file name
+                "Validation Status": expanded_json["validity_status"],
+                "Timestamp": expanded_json["validation_timestamp"],
+                "Error Count": len(expanded_json["validation_errors"])
+            }
+            new_df = pd.DataFrame([new_row])
+            df_summary = pd.concat([df_summary, new_df], ignore_index=True)
+            df_summary.to_excel(writer, sheet_name='Summary', index=False)
+
+            # If there are errors, add them to a new sheet
+            if not expanded_json["validity_status"]:
+                df_errors = pd.DataFrame(expanded_json["validation_errors"])
+                error_sheet_name = f"Errors_{len(workbook.sheetnames) + 1}"
+                df_errors.to_excel(writer, sheet_name=error_sheet_name, index=False)
+
+            # Save the original JSON in a flattened format
+            if 'Original_JSONs' in workbook.sheetnames:
+                df_originals = pd.read_excel(file_path, sheet_name='Original_JSONs', engine='openpyxl')
+                del writer.book['Original_JSONs']
+            else:
+                df_originals = pd.DataFrame()
+
+            flattened_json = pd.json_normalize(expanded_json["original_json"])
+            df_originals = pd.concat([df_originals, flattened_json], ignore_index=True)
+            df_originals.to_excel(writer, sheet_name='Original_JSONs', index=False)
+
     def update_context_length(self, *args):
         selected_model = self.model_var.get()
         print("Updating context window value for selected model: " + selected_model)
@@ -684,7 +1338,7 @@ https://www.promptingguide.ai/
             text_box.insert("1.0", content)
 
         save_button = tk.Button(message_component_window, text="Save", command=lambda:
-                                self.save_message_component(text_box.get("1.0", "end-1c"), message_component_window))
+        self.save_message_component(text_box.get("1.0", "end-1c"), message_component_window))
         save_button.pack(pady=10)
 
     # Method to save the message component and close the message component window
@@ -695,16 +1349,6 @@ https://www.promptingguide.ai/
         window.destroy()
 
     # Method to add message component to the list and update the token count
-    # TODO: Update this so that it counts the tokens for all of the message components.
-    """
-    def add_message_component(self, content):
-        print("Adding message component")
-        self.message_components.append({'role': tk.StringVar(), 'content': content})
-
-        self.token_count.set(num_tokens_from_messages([{'role': 'user', 'content': content}],
-                                                      model=self.model_var.get()))
-    """
-
     def add_message_component(self, content):
         print("Adding message component")
         self.message_components.append({'role': tk.StringVar(), 'content': content})
@@ -733,17 +1377,17 @@ https://www.promptingguide.ai/
             content_label.pack(side=tk.LEFT, padx=5)
 
             edit_button = tk.Button(row_frame, text="Edit", command=lambda item=message_item:
-                                    self.edit_message_component(item))
+            self.edit_message_component(item))
             edit_button.pack(side=tk.RIGHT, padx=10)
 
             up_button = tk.Button(row_frame, text="↑", command=lambda i=index:
-                                  self.move_message_component_up(i))
+            self.move_message_component_up(i))
             up_button.pack(side=tk.RIGHT, padx=(0, 2))
             if index == 0:  # If it's the first item
                 up_button["state"] = "disabled"
 
             down_button = tk.Button(row_frame, text="↓", command=lambda i=index:
-                                    self.move_message_component_down(i))
+            self.move_message_component_down(i))
             down_button.pack(side=tk.RIGHT, padx=(2, 0))
             if index == len(self.message_components) - 1:  # If it's the last item
                 down_button["state"] = "disabled"
@@ -763,19 +1407,6 @@ https://www.promptingguide.ai/
             self.update_message_component_list()
 
     # Method to edit the message component
-    """
-    def edit_message_component(self, item):
-        def save_changes():
-            print(f"Saving changes to message component")
-            item['content'] = text_box.get("1.0", "end-1c")
-            self.update_message_component_list()
-            self.token_count.set(num_tokens_from_messages([{'role': 'user', 'content': item['content']}],
-                                                          model=self.model_var.get()))
-            message_component_window.destroy()
-
-        print(f"Editing message component")
-    """
-
     def edit_message_component(self, item):
         def save_changes():
             print(f"Saving changes to message component")
@@ -786,6 +1417,7 @@ https://www.promptingguide.ai/
             self.token_count.set(num_tokens_from_messages(self.message_components, model=self.model_var.get()))
 
             message_component_window.destroy()
+
         print(f"Editing message component")
 
         message_component_window = tk.Toplevel(self.root)
@@ -812,6 +1444,7 @@ https://www.promptingguide.ai/
         print("Validating parameters and submitting prompt to LLM API")
         if not self.validate_model():
             return
+        print(f"Attempting to get the model value.")
         model = self.model_var.get()
 
         # Assemble the prompt and validate the total number of tokens
@@ -820,7 +1453,7 @@ https://www.promptingguide.ai/
         Required. Messages is an array of messages in the format "[role]":"[message]".
         """
         for item in self.message_components:
-            role = item['role'].get()
+            role = item['role']
             content = item['content']
             messages_list.append({'role': role, 'content': content})
 
@@ -1169,7 +1802,6 @@ def populate_model_list(context_window, api_key):
     #
     # or somewhere like this:
     # https://github.com/terminalcommandnewsletter/everything-chatgpt
-
     model_list = []
     for model_name, context_window in context_window.items():
         print(f"Testing {model_name}...")
