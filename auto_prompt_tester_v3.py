@@ -1,10 +1,10 @@
 import os
 import tkinter as tk
+from tkinter import filedialog
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox
 from tkinter import simpledialog
-from tkinter import filedialog
 import tiktoken
 import openai
 import json
@@ -381,7 +381,6 @@ class ToolTip:
 
 class PromptUI:
     def __init__(self, root, model_list, context_windows, api_key):
-        self.select_schema_file = None
         self.root = root
         self.model_list = model_list
         self.api_key = api_key
