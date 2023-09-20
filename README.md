@@ -50,16 +50,17 @@ Guide to Prompt Structure tab - this tab provides some brief guidance to prompti
 <br>
 API Key - In order to use this application, you will need an OpenAI API key. You can get one by creating an account at OpenAI.com and associating a credit card with your account.  Each API call cost a few cents at most.
 
-
-
-<strong>prompt_tester</strong>
+<br>
+<br>
+<strong>Prompt_tester</strong>
 <br>
 This tool is an extension of the chat_gui application that allows the user to to run batch testing of a prompt. It allows the user to define a prompt template in its Prompt tab that asks the model to perform an operation on the included content, and directs the model to respond with a JSON. It also allows the user to identify an output directory and a file containing the target JSON schema for the output. When executed it iterates through a source directory of .txt files and embeds the contents of each file in the prompt template by replacing the "--{?}--" string in the prompt template with the file contents.  The completed prompt is then submitted to the LLM and the response is parsed to remove any content before or after the JSON.  The JSON is then validated against the JSON schema. Finally, the result of the validation and the output JSON are written to the output directory.
 <br>
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Prompt_Tester.jpg" alt="Prompt Tab" align="middle" width="700"/>
 <br>
-<strong>token_counter</strong>
 
+<strong>Token_counter</strong>
+<br>
 This tool provides a gui for ticktoken that allows the user to paste a block of text into the text window, and then use the controls to count the tokens in the text.
 
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" align="middle" width="700"/>
