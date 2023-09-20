@@ -64,6 +64,7 @@ This tool is an extension of the chat_gui application that allows the user to to
 <strong>Token_counter</strong>
 <br>
 <br>
+<br>
 This tool provides a gui for ticktoken that allows the user to paste a block of text into the text window, and then use the controls to count the tokens in the text.
 
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" align="middle" width="700"/>
