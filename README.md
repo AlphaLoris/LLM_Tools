@@ -59,15 +59,16 @@ This tool is an extension of the chat_gui application that allows the user to to
 <br>
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Prompt_Tester.jpg" alt="Prompt Tab" align="middle" width="700"/>
 <br>
-
+<br>
 <strong>Token_counter</strong>
+<br>
 <br>
 This tool provides a gui for ticktoken that allows the user to paste a block of text into the text window, and then use the controls to count the tokens in the text.
 
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/token_counter.jpg" alt="Prompt Tab" align="middle" width="700"/>
-
-
+<br>
+<br>
 
 <strong>text_splitter</strong>
-
+<br>
 This tool allows the user to browse to a directory containing a .txt file, and select the file. Text_splitter will then split the text file into chunks with the maximum size in tokens specified by the max_tokens value in the code. The max_token value is currently set to 4000 tokens.
