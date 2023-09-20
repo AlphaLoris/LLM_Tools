@@ -10,7 +10,7 @@
 
 This application provides a graphical user interface for the OpenAI chat completion API.  It allows you to choose one of their Large Language Models to interact with, provide values for all of the parameters that control the behavior of the LLM, build a prompt for the LLM, submit it, and then review the LLM's response. Here is a brief description of its features/behavior:
 
-- Prompt tab (above) - The tab where you can provide your API key, choose the model you want to submit your prompt to, set the behavioral parameters for the model, and define your prompt.
+Prompt tab (above) - The tab where you can provide your API key, choose the model you want to submit your prompt to, set the behavioral parameters for the model, and define your prompt.
 - API Key - Prompts you for an OpenAI API key, then saved the value you provide in your operating system's keychain. You can also edit the API key should it change (how to get an API key is described below).
 - Model Drop-Down Menu - After you have provided an API key, this menu is dynamically populated based on the models your API key has access to. Basically the application runs through the list of models that support the chat completion api and sends an api call to the api using each of the models. If the API call succeeds, the model is added to the dropdown menu. This is done each time you start the application.
 - Parameters - These parameters control the model's behavior. If you hover your cursor over the name of the parameter, the application will display a brief description of the purpose of the parameter The "Restore Defaults" button will reset them to their original values, which I selected to provide predictable responses to prompts.
@@ -30,13 +30,14 @@ This application provides a graphical user interface for the OpenAI chat complet
 - Prompt tokens - the number of tokens in the prompt.
 - Total tokens - The total number of tokens used in the turn; the sum of the number of Completion tokens and Prompt tokens.
 - Finish Reasons - The reason the model stopped generating the response. Unless you specified a stop text string in the parameters, the Finish Reason will generally be "Stop" which I understand to mean that the model decided it had reached the end of the response. If the API call fails, you will see a description of that here.
-- Response tab - The tab where the text of the model's response to your prompt will be displayed.
+  
+Response tab - The tab where the text of the model's response to your prompt will be displayed.
 
 
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Chat_Completion_AI_UI_2.jpg" alt="Prompt Tab" align="middle" width="700"/>
 
 
-- Guide to Prompt Structure tab - this tab provides some brief guidance to prompting, and links to some other prompting resources.
+Guide to Prompt Structure tab - this tab provides some brief guidance to prompting, and links to some other prompting resources.
 
 
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Chat_Completion_AI_UI_3.jpg" alt="Prompt Tab" align="middle" width="700"/>
