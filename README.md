@@ -32,13 +32,11 @@ Prompt tab (above) - The tab where you can provide your API key, choose the mode
 - Total tokens - The total number of tokens used in the turn; the sum of the number of Completion tokens and Prompt tokens.
 - Finish Reasons - The reason the model stopped generating the response. Unless you specified a stop text string in the parameters, the Finish Reason will generally be "Stop" which I understand to mean that the model decided it had reached the end of the response. If the API call fails, you will see a description of that here.
 <br>
-<br>
 Response tab - The tab where the text of the model's response to your prompt will be displayed.
 <br>
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Chat_Completion_AI_UI_2.jpg" alt="Prompt Tab" align="middle" width="700"/>
 
 
-<br>
 <br>
 <br>
 Guide to Prompt Structure tab - this tab provides some brief guidance to prompting, and links to some other prompting resources.
