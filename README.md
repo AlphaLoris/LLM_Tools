@@ -1,13 +1,13 @@
 # LLM_Tools
-
+<br>
 <strong>chat_API_gui</strong>
-
+<br>
 
 
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Chat_Completion_AI_UI.jpg" alt="Prompt Tab" align="middle" width="700"/>
 
 
-
+<br>
 This application provides a graphical user interface for the OpenAI chat completion API.  It allows you to choose one of their Large Language Models to interact with, provide values for all of the parameters that control the behavior of the LLM, build a prompt for the LLM, submit it, and then review the LLM's response. Here is a brief description of its features/behavior:
 
 Prompt tab (above) - The tab where you can provide your API key, choose the model you want to submit your prompt to, set the behavioral parameters for the model, and define your prompt.
