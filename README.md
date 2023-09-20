@@ -1,6 +1,6 @@
 # LLM_Tools
 
-<strong>openai_chat_gui</strong>
+<strong>chat_API_gui</strong>
 
 
 
