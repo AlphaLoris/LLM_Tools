@@ -6,7 +6,7 @@ import tiktoken
 def num_tokens_from_string(string: str, encoding_name: str) -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.get_encoding(encoding_name)
-    num_tokens = len(encoding.encode(string, disallowed_special=()))  # Added the argument here
+    num_tokens = len(encoding.encode(string))
     return num_tokens
 
 
@@ -20,12 +20,13 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
         num_tokens = 0
         for message in messages:
             num_tokens += 4  # every message follows <im_start>{role/name}\n{content}<im_end>\n
-            num_tokens += len(encoding.encode(message, disallowed_special=()))  # Added the argument here
+            num_tokens += len(encoding.encode(message))
         num_tokens += 2  # every reply is primed with <im_start>assistant
         print("num_tokens calculated:", num_tokens)
         return num_tokens
     else:
         raise NotImplementedError(f"num_tokens_from_messages() is not presently implemented for model {model}.")
+
 
 # Function to count the tokens
 def count_tokens():

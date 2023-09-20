@@ -15,6 +15,7 @@ from jsonschema import validate, ValidationError
 import datetime
 import pandas as pd
 from openpyxl import load_workbook
+import chardet
 
 """
 To build this script into an executable, run the following command from the root directory of the project:
@@ -171,13 +172,15 @@ def num_tokens_from_messages(messages, model):
             . See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are
              converted to tokens."""
         )
+
+    # num_tokens += len(encoding.encode(message, disallowed_special=()))
     num_tokens = 0
     for message in messages:
         num_tokens += tokens_per_message
         for key, value in message.items():
             if isinstance(value, str):
                 # Encode strings
-                num_tokens += len(encoding.encode(value))
+                num_tokens += len(encoding.encode(value, disallowed_special=()))
             elif isinstance(value, (int, float)):
                 # Convert numbers to strings
                 num_tokens += len(encoding.encode(str(value)))
@@ -188,7 +191,7 @@ def num_tokens_from_messages(messages, model):
                 # For other types, try converting to string
                 try:
                     str_value = str(value)
-                    num_tokens += len(encoding.encode(str_value))
+                    num_tokens += len(encoding.encode(str_value, disallowed_special=()))
                 except:
                     print(f"Could not handle value: {value}")
     num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
@@ -245,99 +248,6 @@ def send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens,
     except openai.OpenAIError as e:
         print(f"Error while sending request to OpenAI: {e}")
         return None
-
-
-"""
-# Revised send_request function -- never used yet.
-def send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens,
-                 presence_penalty, frequency_penalty, logit_bias, user):
-
-    # Log the beginning of the request
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{current_time}] Sending request to LLM API for model: {model}")
-
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json",
-        "User-Agent": "OpenAI Python v0.0.1"
-    }
-
-    data = {
-        "model": model,
-        "prompt": prompt,
-        "temperature": temperature,
-        "top_p": top_p,
-        "n": n,
-        "stream": stream,
-        "stop": stop,
-        "max_tokens": max_tokens,
-        "presence_penalty": presence_penalty,
-        "frequency_penalty": frequency_penalty,
-        "logit_bias": logit_bias,
-        "user": user
-    }
-
-    try:
-        response = requests.post(API_ENDPOINT, headers=headers, json=data)
-        response.raise_for_status()
-
-        # Log the successful completion of the request
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{current_time}] Successfully received response from LLM API for model: {model}")
-
-    except requests.RequestException as e:
-        # Log any exception that occurs
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{current_time}] Error encountered while making request to LLM API: {str(e)}")
-        raise e  # Re-raise the exception for upstream handling
-
-    return response.json()
-"""
-
-"""
-# Original send_request function
-def send_request(model: object, messages: object, temperature: object, top_p: object, n: object, stream: object,
-                 stop: object, max_tokens: object, presence_penalty: object, frequency_penalty: object,
-                 logit_bias: object, user: object) -> object:
-
-    # Create request dictionary
-    request_body = {
-        'model': model,
-        'messages': messages,
-        'temperature': temperature,
-        'top_p': top_p,
-        'n': n,
-        'stream': stream,
-        'stop': stop,
-        'max_tokens': max_tokens,
-        'presence_penalty': presence_penalty,
-        'frequency_penalty': frequency_penalty,
-        'logit_bias': logit_bias,
-        'user': user
-    }
-
-    # Mock headers
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $OPENAI_API_KEY'  # in actual usage, the API key is managed by the OpenAI library
-    }
-
-    # Generate mock HTTP message
-    http_message = "POST /v1/chat/completions HTTP/1.1\n" \
-                   "Host: api.openai.com\n" + \
-                   "".join(f"{k}: {v}\n" for k, v in headers.items()) + "\n" + \
-                   json.dumps(request_body, indent=4)
-
-    # Print HTTP message
-    print("HTTP Message: ", http_message)
-
-    response = openai.ChatCompletion.create(**request_body)
-
-    # Print formatted response
-    print("Response:\n", json.dumps(response.to_dict(), indent=4))
-
-    return response
-"""
 
 
 # Main UI
@@ -399,7 +309,7 @@ class PromptUI:
         self.prompt_notebook.add(self.results_tab, text=" Response ")
 
         self.prompt_test_tab = tk.Frame(self.prompt_notebook)
-        self.prompt_notebook.add(self.prompt_test_tab, text=" Test Prompt ")
+        self.prompt_notebook.add(self.prompt_test_tab, text=" Prompt Test Resources ")
 
         self.prompt_structure_tab = tk.Frame(self.prompt_notebook)
         self.prompt_notebook.add(self.prompt_structure_tab, text=" Guide to Prompt Structure ")
@@ -724,6 +634,9 @@ https://www.promptingguide.ai/
                                             command=self.select_schema_file)
         self.schema_file_button.grid(row=2, column=1, padx=10, sticky="w")
 
+        # TODO: Add an output file name
+        # TODO: Allow the user to specify the delimiters for in the prompt template
+
         # Test Button
         self.test_button = tk.Button(self.prompt_test_tab, text="Test",
                                      command=self.run_test)
@@ -799,7 +712,13 @@ https://www.promptingguide.ai/
             for file in os.listdir(self.source_dir.get()):
                 print("Processing file:", file)
 
-                with open(os.path.join(self.source_dir.get(), file)) as f:
+                # Detect the encoding of the file
+                with open(os.path.join(self.source_dir.get(), file), 'rb') as f:
+                    result = chardet.detect(f.read())
+                    file_encoding = result['encoding']
+
+                # Now read the file with the detected encoding
+                with open(os.path.join(self.source_dir.get(), file), 'r', encoding=file_encoding) as f:
                     content = f.read()
                 print(f"File content of {file}: {content[:100]}...")  # printing the first 100 characters of content
 
@@ -813,8 +732,7 @@ https://www.promptingguide.ai/
                     print(f"msg['role'] type: {type(msg['role'])}, value: {msg['role']}")
                     test_msg = {
                         'role': msg['role'].get() if isinstance(msg['role'], tk.StringVar) else msg['role'],
-                        # get value if StringVar
-                        'content': msg['content']  # copy string content
+                        'content': msg['content'].get() if isinstance(msg['content'], tk.StringVar) else msg['content']
                     }
                     print(f"Constructed test message: {test_msg}")
                     test_message_components.append(test_msg)

@@ -793,16 +793,18 @@ https://www.promptingguide.ai/
         total_completion_tokens = 0
         total_combined_tokens = 0
 
-        with open(os.path.join(self.output_dir.get(), "generated_composite_prompts.txt"),
-                  "w") as generated_prompts_file, \
-                open(os.path.join(self.output_dir.get(), "raw_responses.txt"), "w") as raw_responses_file:
+        for file in os.listdir(self.source_dir.get()):
+            print("Processing file:", file)
 
-            for file in os.listdir(self.source_dir.get()):
-                print("Processing file:", file)
+            # Detect the encoding of the file
+            with open(os.path.join(self.source_dir.get(), file), 'rb') as f:
+                result = chardet.detect(f.read())
+                file_encoding = result['encoding']
 
-                with open(os.path.join(self.source_dir.get(), file)) as f:
-                    content = f.read()
-                print(f"File content of {file}: {content[:100]}...")  # printing the first 100 characters of content
+            # Now read the file with the detected encoding
+            with open(os.path.join(self.source_dir.get(), file), 'r', encoding=file_encoding) as f:
+                content = f.read()
+            print(f"File content of {file}: {content[:100]}...")  # printing the first 100 characters of content
 
                 # Make a fresh copy of the prompt template for each file
                 # test_message_components = copy.deepcopy(self.message_components)
