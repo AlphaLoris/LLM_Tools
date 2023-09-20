@@ -48,8 +48,9 @@ Guide to Prompt Structure tab - this tab provides some brief guidance to prompti
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Chat_Completion_AI_UI_3.jpg" alt="Prompt Tab" align="middle" width="700"/>
 
 <br>
+<br>
 API Key - In order to use this application, you will need an OpenAI API key. You can get one by creating an account at OpenAI.com and associating a credit card with your account.  Each API call cost a few cents at most.
-
+<br>
 <br>
 <br>
 <strong>Prompt_tester</strong>
