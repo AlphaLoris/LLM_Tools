@@ -57,6 +57,7 @@ API Key - In order to use this application, you will need an OpenAI API key. You
 <br>
 This tool is an extension of the chat_gui application that allows the user to to run batch testing of a prompt. It allows the user to define a prompt template in its Prompt tab that asks the model to perform an operation on the included content, and directs the model to respond with a JSON. It also allows the user to identify an output directory and a file containing the target JSON schema for the output. When executed it iterates through a source directory of .txt files and embeds the contents of each file in the prompt template by replacing the "--{?}--" string in the prompt template with the file contents.  The completed prompt is then submitted to the LLM and the response is parsed to remove any content before or after the JSON.  The JSON is then validated against the JSON schema. Finally, the result of the validation and the output JSON are written to the output directory.
 <br>
+<br>
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Prompt_Tester.jpg" alt="Prompt Tab" align="middle" width="700"/>
 <br>
 <br>
@@ -70,5 +71,6 @@ This tool provides a gui for ticktoken that allows the user to paste a block of 
 <br>
 
 <strong>text_splitter</strong>
+<br>
 <br>
 This tool allows the user to browse to a directory containing a .txt file, and select the file. Text_splitter will then split the text file into chunks with the maximum size in tokens specified by the max_tokens value in the code. The max_token value is currently set to 4000 tokens.
