@@ -70,7 +70,7 @@ This tool provides a gui for ticktoken that allows the user to paste a block of 
 <br>
 <br>
 
-<strong>text_splitter</strong>
+<strong>Text_splitter</strong>
 <br>
 <br>
 This tool allows the user to browse to a directory containing a .txt file, and select the file. Text_splitter will then split the text file into chunks with the maximum size in tokens specified by the max_tokens value in the code. The max_token value is currently set to 4000 tokens.
