@@ -319,7 +319,7 @@ class PromptUI:
         self.api_key = api_key
         self.context_windows = context_windows
         self.context_length = tk.IntVar()
-        self.root.title("OpenAI Chat Completion API UI")
+        self.root.title("Chat Completion API UI")
         self.root.geometry("700x800")
 
         self.prompt_notebook = ttk.Notebook(self.root)
