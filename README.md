@@ -33,7 +33,6 @@ Prompt tab (above) - The tab where you can provide your API key, choose the mode
 - Finish Reasons - The reason the model stopped generating the response. Unless you specified a stop text string in the parameters, the Finish Reason will generally be "Stop" which I understand to mean that the model decided it had reached the end of the response. If the API call fails, you will see a description of that here.
 <br>
 <br>
-<br>
 Response tab - The tab where the text of the model's response to your prompt will be displayed.
 <br>
 
