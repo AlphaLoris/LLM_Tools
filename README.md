@@ -42,7 +42,6 @@ Response tab - The tab where the text of the model's response to your prompt wil
 <br>
 Guide to Prompt Structure tab - this tab provides some brief guidance to prompting, and links to some other prompting resources.
 <br>
-<br>
 
 
 <img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Chat_Completion_AI_UI_3.jpg" alt="Prompt Tab" align="middle" width="700"/>
