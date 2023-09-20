@@ -4,7 +4,7 @@
 <br>
 <br>
 
-<img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Chat_Completion_AI_UI_2.jpg" alt="Prompt Tab" align="middle" width="700"/>
+<img src="https://github.com/AlphaLoris/LLM_Tools/blob/master/resources/Chat_Completion_AI_UI_1.jpg" alt="Prompt Tab" align="middle" width="700"/>
 
 
 <br>
