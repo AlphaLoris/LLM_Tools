@@ -198,6 +198,82 @@ def num_tokens_from_messages(messages, model):
     return num_tokens
 
 
+def send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens, presence_penalty, frequency_penalty,
+                 logit_bias, user):
+
+    def extract_string_var(value, name):
+        """Helper function to extract string value if the input is a StringVar."""
+        if isinstance(value, tk.StringVar):
+            print(f"'{name}' was a StringVar. Extracting its value.")
+            return value.get()
+        return value
+
+    # Check and extract string values for all parameters
+    model = extract_string_var(model, "model")
+    prompt = extract_string_var(prompt, "prompt")
+    temperature = extract_string_var(temperature, "temperature")
+    top_p = extract_string_var(top_p, "top_p")
+    n = extract_string_var(n, "n")
+    stream = extract_string_var(stream, "stream")
+    max_tokens = extract_string_var(max_tokens, "max_tokens")
+    presence_penalty = extract_string_var(presence_penalty, "presence_penalty")
+    frequency_penalty = extract_string_var(frequency_penalty, "frequency_penalty")
+    user = extract_string_var(user, "user")
+
+    # Check if 'stop' and 'logit_bias' are StringVar objects and extract if necessary
+    stop = extract_string_var(stop, "stop")
+    logit_bias = extract_string_var(logit_bias, "logit_bias")
+
+    # If 'stop' and 'logit_bias' are lists/dictionaries, check and extract string values for their elements
+    if isinstance(stop, list):
+        stop = [extract_string_var(s, "stop item") for s in stop]
+    if isinstance(logit_bias, dict):
+        logit_bias = {k: extract_string_var(v, f"logit_bias for token {k}") for k, v in logit_bias.items()}
+
+    # Check and extract string values for items in 'messages' (prompt)
+    if isinstance(prompt, list):
+        for i, item in enumerate(prompt):
+            if isinstance(item, dict):
+                for key, value in item.items():
+                    prompt[i][key] = extract_string_var(value, f"messages item {i} key {key}")
+            else:
+                prompt[i] = extract_string_var(item, f"messages item {i}")
+
+    # Check and extract string values for items in 'logit_bias'
+    if isinstance(logit_bias, dict):
+        for key, value in logit_bias.items():
+            logit_bias[key] = extract_string_var(value, f"logit_bias key {key}")
+
+    # Prepare the payload and print the type of each variable
+    payload = {
+        "model": model,
+        "messages": prompt,
+        "temperature": temperature,
+        "top_p": top_p,
+        "n": n,
+        "stream": stream,
+        "stop": stop,
+        "max_tokens": max_tokens,
+        "presence_penalty": presence_penalty,
+        "frequency_penalty": frequency_penalty,
+        "logit_bias": logit_bias,
+        "user": user
+    }
+
+    # Print the type of each variable in the payload
+    for key, value in payload.items():
+        print(f"{key}: {type(value)}")
+
+    print("Sending request to OpenAI in send_request function...")
+
+    try:
+        response = openai.ChatCompletion.create(**payload)
+        return response
+    except openai.OpenAIError as e:
+        print(f"Error while sending request to OpenAI: {e}")
+        return None
+
+"""
 def send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens, presence_penalty, frequency_penalty, logit_bias, user):
 
     # Ensure OpenAI library is imported
@@ -248,6 +324,7 @@ def send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens,
     except openai.OpenAIError as e:
         print(f"Error while sending request to OpenAI: {e}")
         return None
+"""
 
 
 # Main UI
