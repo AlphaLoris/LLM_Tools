@@ -27,6 +27,7 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     else:
         raise NotImplementedError(f"num_tokens_from_messages() is not presently implemented for model {model}.")
 
+
 # Function to count the tokens
 def count_tokens():
     # Get the user input from the text box
@@ -41,6 +42,7 @@ def count_tokens():
 
         # Display the number of tokens in the result area
         result_area.configure(text=f"Number of tokens: {num_tokens}")
+
 
 # Create the main window
 window = tk.Tk()
