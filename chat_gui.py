@@ -141,6 +141,7 @@ def num_tokens_from_messages(messages, model):
         print("Warning: model not found. Using cl100k_base encoding.")
         encoding = tiktoken.get_encoding("cl100k_base")
     if model in {
+        "gpt-4-1106-preview"
         "gpt-3.5-turbo-0613",
         "gpt-3.5-turbo-16k-0613",
         "gpt-4-0314",
@@ -334,6 +335,7 @@ class PromptUI:
 
         prompt_structure_text = textwrap.dedent("""Context Window Size (in tokens):
 
+gpt-4-1106-preview: 128,000
 gpt-4: 8192
 gpt-4-0613: 8192
 gpt-4-0314: 8192
@@ -1181,6 +1183,7 @@ def populate_model_list(context_window, api_key):
 
 if __name__ == "__main__":
     context_windows = {
+        "gpt-4-1106-preview": 128000,
         "gpt-4": 8192,
         "gpt-4-0613": 8192,
         "gpt-4-0314": 8192,
