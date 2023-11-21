@@ -13,7 +13,9 @@ Prompt_Tester is a further evolution of the Chat_API_GUI that provides an initia
 
 When the processing is initiated, the application parses the source file, embedds its content in the prompt template, and submits the prompt, which requests a JSON in response. The model response is parsed for that JSON, and the JSON is validated using the JSON Schema identified in the interface.  Any validation errors are written out to an .xslx file, as is the content of the result JSON.
 
-Prompt_Tester served as a proof of concept for the PromptChainManager project
+Prompt_Tester served as a proof of concept for the PromptChainManager project.
+
+See the UI/details for each of these projects below.
 
 <br>
 <strong>chat_API_gui</strong>
