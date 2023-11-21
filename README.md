@@ -1,4 +1,20 @@
 # LLM_Tools
+
+
+This project includes four LLM-based tools: Chat_API_GUI, Prompt_Tester, Token_Counter, Text_Splitter.  
+
+Token_Counter is a GUI for OpenAI's TikToken package which counts number of tokens in the submitted text. 
+
+Text_Splitter is a tool that will split a .txt file into 4000 token chunks.   
+
+The The Chat_API_GUI provides a GUI for the OpenAI Chat Completion API.  
+
+Prompt_Tester is a further evolution of the Chat_API_GUI that provides an initial step toward the creation of a prompt chaining tool. It allows the user to define a prompt template the using the controls in the Chat_API_GUI, and allows the user to designate a source and destination directory and a JSON Schema file.  The intention is for the user to populate the source directory with content to be embedded in the prompt template, with the material for each prompt in its own .txt file. 
+
+When the processing is initiated, the application parses the source file, embedds its content in the prompt template, and submits the prompt, which requests a JSON in response. The model response is parsed for that JSON, and the JSON is validated using the JSON Schema identified in the interface.  Any validation errors are written out to an .xslx file, as is the content of the result JSON.
+
+Prompt_Tester served as a proof of concept for the PromptChainManager project
+
 <br>
 <strong>chat_API_gui</strong>
 <br>
