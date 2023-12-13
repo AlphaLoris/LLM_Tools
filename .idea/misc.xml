@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Poetry (openai_tools)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Poetry (openai_tools)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (LLM_Tools)" project-jdk-type="Python SDK" />
 </project>

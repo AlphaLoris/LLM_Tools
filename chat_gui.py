@@ -5,6 +5,7 @@ from tkinter import messagebox
 from tkinter import simpledialog
 import tiktoken
 import openai
+from openai import OpenAI
 import json
 import textwrap
 import keyring.backends.macOS
@@ -14,16 +15,20 @@ import keyring.backends.Windows
 To build this script into an executable, run the following command from the root directory of the project:
 pyinstaller --hidden-import=tiktoken_ext.openai_public --hidden-import=tiktoken_ext --onefile openai_chat_gui.py
 """
+API_KEY = ''
 
 
 def check_api_key(root, keychain_path=None):
     # Attempt to retrieve the API key from the keyring
     print("Attempting to retrieve API Key from keyring")
+    global API_KEY
     api_key = keyring.get_password("openai", "api_key")
     if not api_key:
         # Open a Tkinter dialogue to prompt the user for their OpenAI API Key
         print("API Key not retrieved from keyring. Prompting user for API Key")
         api_key = get_api_key(root, keychain_path)
+    if api_key:
+        API_KEY = api_key
     return api_key
 
 
@@ -72,22 +77,31 @@ def prompt_for_api_key(root):
 
 
 def is_valid_api_key_model(api_key, test_model):
-    openai.api_key = api_key
+    client = OpenAI(api_key=api_key)
     error_messages = []
     print("Validating API key by calling OpenAI API")
+
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=test_model,
             messages=[{"role": "user", "content": "Hello, world!"}],
             temperature=0.9, top_p=1, n=1, stream=False, max_tokens=5,
             presence_penalty=0, frequency_penalty=0, logit_bias={}, user=""
         )
         print("This API key/model combination is valid. Model Response:")
-        print(response['choices'][0]['message']['content'])
-    except openai.OpenAIError as e:
+
+        # Adjusted access to the response object
+        if response.choices and len(response.choices) > 0:
+            print(response.choices[0].message.content)  # Adjusted based on API documentation
+        else:
+            print("No response choices available")
+
+    except Exception as e:  # General exception handling for now
         print(f"Error: {e}")
         error_messages.append(str(e))
+
     return error_messages
+
 
 
 # TODO: This function displays an error message that seems to be irrelevant to this application. Need to fix it.
@@ -207,7 +221,7 @@ def send_request(model: object, messages: object, temperature: object, top_p: ob
     :param model:
     :type logit_bias: object
     """
-
+    client = OpenAI(api_key=API_KEY)
     # Create request dictionary
     request_body = {
         'model': model,
@@ -239,10 +253,11 @@ def send_request(model: object, messages: object, temperature: object, top_p: ob
     # Print HTTP message
     print("HTTP Message: ", http_message)
 
-    response = openai.ChatCompletion.create(**request_body)
+    response = client.chat.completions.create(**request_body)
 
     # Print formatted response
-    print("Response:\n", json.dumps(response.to_dict(), indent=4))
+    response_dict = response.model_dump()
+    print("Response:\n", json.dumps(response_dict, indent=4))
 
     return response
 
@@ -273,6 +288,7 @@ def send_request(model: object, prompt: object, temperature: object, top_p: obje
     )
     return response
 """
+
 
 # Main UI
 class ResultsTab(tk.Frame):
@@ -1052,6 +1068,8 @@ https://www.promptingguide.ai/
         print("Parameters validated. Sending request...")
         response = send_request(model, prompt, temperature, top_p, n, stream, stop, max_tokens, presence_penalty,
                                 frequency_penalty, logit_bias, user)
+        print(f"Response type is: ", type(response))
+        print(response.usage.__dict__)
         self.display_response(response)
 
     def reset_prompt_gui(self):
@@ -1129,9 +1147,9 @@ https://www.promptingguide.ai/
         usage_label.grid(row=3, column=0, padx=5, pady=2, sticky="w")
 
         # Usage text
-        usage_text = f"Completion tokens: {response.usage['completion_tokens']}\n" \
-                     f"Prompt tokens: {response.usage['prompt_tokens']}\n" \
-                     f"Total tokens: {response.usage['total_tokens']}"
+        usage_text = f"Completion tokens: {response.usage.completion_tokens}\n" \
+                     f"Prompt tokens: {response.usage.prompt_tokens}\n" \
+                     f"Total tokens: {response.usage.total_tokens}"
         usage_text_widget = tk.Text(self.response_parameters_frame, wrap=tk.WORD, height=4, width=30)
         usage_text_widget.insert(tk.END, usage_text)
         usage_text_widget.configure(state='disabled')
